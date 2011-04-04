@@ -18,6 +18,18 @@ class UsersController extends AppController {
 	function deleteMember($username, $password) {
 	  
 	}
+	
+	function changePassword($username, $oldPassword, $newPassword) {
+	  
+	}
+	
+	function viewHistory($username, $password) {
+	  
+	}
+	
+	function viewRewardsPoints($username, $password) {
+	  
+	}
 
   // function register() {
   //     if (!empty($this->data)) {
