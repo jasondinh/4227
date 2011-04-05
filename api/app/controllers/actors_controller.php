@@ -2,30 +2,106 @@
 class ActorsController extends AppController {
 
 	var $name = 'Actors';
+	var $uses = array("Employee", "User", 'Actor', 'Video');
+	var $error;
+	var $result;	
 	
-	function addActor($actor) {
+	function beforeRender() {
+	  if ($this->error) {
+	    $this->set('error', $this->error);
+	    debug($this->error);
+	  }
+	  
+	  if ($this->result) {
+	    $this->set('result', $this->result);
+	    debug($this->result);
+	  }
+	}
+	function add_actor() {
+		
+		$employee = $this->Employee->validate_employee();
+		
+		if ($employee) {
+			$actor  = $this->params['form']['actor'];
+			$this->Actor->save($actor);
+			$this->result = $actor;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	  
 	}
 	
-	function getActorDetails($actor_id) {
-	  
+	function get_actor_details() {
+		
+	  	//TODO: validaion
+		$actor = $this->params['form']['actor'];
+		
+		$actor = $this->Actor->find_actor_by_id($actor['id']);
+		
+		if ($actor) {
+			$this->result = $actor;
+		}
+		
+		else {
+			$this->error = generate_error('No such actor');
+		}
 	}
 	
-	function updateActorDetails($actor) {
-	  
+	function update_actor_details() {
+	  	$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$actor  = $this->params['form']['actor'];
+			$this->Actor->save($actor);
+			$this->result = $actor;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function deleteActor($actor_id) {
-	  
+	function delete_actor() {
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$actor  = $this->params['form']['actor'];
+			$this->Actor->delete($actor['id']);
+			$this->result = array('result' => TRUE);
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function addActorMovie($actor_id, $video_id) {
-	  
-	  
+	function add_actor_movie() {
+		
+		//TODO: validate actor and movie existence
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$actor  = $this->params['form']['actor'];
+			$video  = $this->params['form']['video'];
+			
+			$this->Actor->habtmAdd('Video', $actor['id'], $video['id']);
+			
+			$this->result = array('result' => TRUE);
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function removeActorMovie($actor_id, $video_id) {
-	  
+	function remove_actor_movie() {
+	  	$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$actor  = $this->params['form']['actor'];
+			$video  = $this->params['form']['video'];
+			
+			$this->Actor->habtmDelete('Video', $actor['id'], $video['id']);
+			
+			$this->result = array('result' => TRUE);
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 
 	// function index() {

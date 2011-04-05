@@ -28,5 +28,16 @@ class Employee extends AppModel {
 	  
 	  return $employee;
 	}
+	
+	function find_employee_by_id($id) {
+	  $employee = $this->find('first', array(
+	   'conditions' => array(
+	     'Employee.id' => $id
+	   ),
+	   'recursive' => -1
+	  ));
+	  
+	  return $employee;
+	}
 }
 ?>

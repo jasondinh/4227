@@ -2,6 +2,7 @@
 class UsersController extends AppController {
 
 	var $name = 'Users';
+	var $uses = array('Employee', 'User');
 	var $error;
 	var $result;	
 	
@@ -82,8 +83,22 @@ class UsersController extends AppController {
 	  }
 	}
 	
-	function deleteMember($username, $password) {
-	  
+	function delete_member() {
+		if ($this->Employee->validate_employee())	{
+			$member = $this->params['form']['member'];
+			$user = $this->User->find_user_by_username($member['username']);
+			
+			if ($user) {
+				$this->User->delete($user['User']['id']);
+				$this->result = array('result'=> TRUE);
+			}
+			else {
+				$this->error = generate_error('No such user');
+			}
+		}
+		else {
+			$this->error = generate_error('Permission error');
+		}
 	}
 	
 	function change_password() {
@@ -113,11 +128,11 @@ class UsersController extends AppController {
 	  
 	}
 	
-	function view_history($username, $password) {
+	function view_history() {
 	  
 	}
 	
-	function view_rewardsPoints($username, $password) {
+	function view_rewardsPoints() {
 	  
 	}
 

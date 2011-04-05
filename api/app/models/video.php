@@ -63,6 +63,16 @@ class Video extends AppModel {
 			'insertQuery' => ''
 		)
 	);
-
+	
+	function find_video_by_id($id) {
+		$video = $this->find('first', array(
+			'conditions' => array(
+				'Video.id' => $id
+			),
+			'recursive' => -1
+		));
+		
+		return $video;
+	}
 }
 ?>

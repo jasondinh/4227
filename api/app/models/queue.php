@@ -20,5 +20,16 @@ class Queue extends AppModel {
 			'order' => ''
 		)
 	);
+	
+	function find_queue_by_user_id_and_movie_id($user_id, $movie_id) {
+		$queue = $this->find('first', array(
+			'conditions' => array(
+				'Queue.user_id' => $user_id,
+				'Queue.video_id' => $movie_id
+			),
+		));
+		
+		return $queue;
+	}
 }
 ?>

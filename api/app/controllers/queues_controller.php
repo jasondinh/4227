@@ -3,8 +3,86 @@ class QueuesController extends AppController {
 
 	var $name = 'Queues';
 	
-	function addVideoQueue($username, $password) {
-	  
+	var $uses = array("Employee", "User", 'Video', 'Queue');
+	var $error;
+	var $result;	
+
+	function beforeRender() {
+		if ($this->error) {
+			$this->set('error', $this->error);
+			debug($this->error);
+		}
+
+		if ($this->result) {
+			$this->set('result', $this->result);
+			debug($this->result);
+		}
+	}
+	
+	function add_video_queue() {
+		$user = $this->User->validate_user();
+		
+		if ($user) {
+			$video = $this->params['form']['video'];
+			$tmp_user = $this->params['form']['user'];
+			
+			$queue = $this->Queue->find_queue_by_user_id_and_movie_id($tmp_user['id'], $video['id']);
+			
+			if ($queue) {
+				$this->error = generate_error('Duplicate queue');
+			}
+			else {
+				
+				$video = $this->Video->find_video_by_id($video['id']);
+				
+				if ($video['Video']['available'] <= 0) {
+					$this->error = generate_error('No more stock');
+				}
+				else {
+					$queue = array(
+						'user_id' => $tmp_user['id'],
+						'video_id' => $video['Video']['id']
+					);
+					$this->Queue->create();
+					$this->Queue->save($queue);
+					$video['Video']['available']--;
+					$this->Video->save($video);
+					$this->result = array('result'=>TRUE);
+				}
+			}
+		}
+		else {
+			$this->error = generate_error('Permission error');
+		}
+	}
+	
+	function remove_video_queue() {
+		$user = $this->User->validate_user();
+		
+		if ($user) {
+			$video = $this->params['form']['video'];
+			$tmp_user = $this->params['form']['user'];
+			
+			$queue = $this->Queue->find_queue_by_user_id_and_movie_id($tmp_user['id'], $video['id']);
+			
+			if ($queue) {
+				
+				$this->Queue->delete($queue['Queue']['id']);
+				
+				$video = $this->Video->find_video_by_id($video['id']);
+				
+				$video['Video']['available']++;
+				$this->Video->save($video);
+				$this->result = array('result'=>TRUE);
+			}
+			else {
+				$this->error = generate_error('No such queue');
+				
+			}
+		}
+		else {
+			$this->error = generate_error('Permission error');
+		}
 	}
 
 	// function index() {

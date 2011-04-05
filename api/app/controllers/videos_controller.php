@@ -2,7 +2,7 @@
 class VideosController extends AppController {
 
 	var $name = 'Videos';
-	var $uses = array("Employee", "User");
+	var $uses = array("Employee", "User", 'Video');
 	var $error;
 	var $result;	
 	
@@ -19,27 +19,62 @@ class VideosController extends AppController {
 	}
 	
 	function add_video() {
-	  $employee = $this->Employee->validate_employee();
-	  
-	  if ($employee) {
-	    $this->result = $employee;
-	  }
-	  else {
-	    $this->error = generate_error("wrong username/password");
-	  }
+		
+		//TODO: check video duplication
+		
+		$employee = $this->Employee->validate_employee();
+		
+		if ($employee) {
+			$video  = $this->params['form']['video'];
+			$this->Video->save($video);
+			$this->result = $video;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function getVideoDetails($video_id) {
+	function get_video_details() {
+		
+		//TODO: validaion
+		
+		$video = $this->params['form']['video'];
+		
+		
+		$video = $this->Video->find_video_by_id($video['id']);
+		
+		if ($video) {
+			$this->result = $video;
+		}
+		
+		else {
+			$this->error = generate_error('No such video');
+		}
 	  
 	}
 	
-	function updateVideoDetails($video) {
-	  
-	  
+	function update_video_details() {
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$video  = $this->params['form']['video'];
+			$this->Video->save($video);
+			$this->result = $video;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function deleteVideo($video_id) {
-	  
+	function delete_video() {
+	 	$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$video  = $this->params['form']['video'];
+			$this->Video->delete($video['id']);
+			$this->result = array('result' => TRUE);
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
 	// function show($id = null) {

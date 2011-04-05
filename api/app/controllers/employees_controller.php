@@ -2,24 +2,92 @@
 class EmployeesController extends AppController {
 
 	var $name = 'Employees';
+	var $error;
+	var $result;	
 	
-	function addEmployee($employee) {
+	function beforeRender() {
+	  if ($this->error) {
+	    $this->set('error', $this->error);
+	    debug($this->error);
+	  }
+	  
+	  if ($this->result) {
+	    $this->set('result', $this->result);
+	    debug($this->result);
+	  }
+	}
+	
+	function add_employee() {
+		$tmp_employee = $this->Employee->validate_employee();
+		
+		if ($tmp_employee) {
+			$employee = $this->params['form']['employee'];
+			
+			$tmp_employee_2 = $this->Employee->find_employee_by_username($employee['username']);
+			
+			if ($tmp_employee_2) {
+				$this->error = generate_error('Duplicate username');
+			}
+			else {
+				$this->Employee->create();
+				$this->Employee->save($employee);
+				$this->result = $employee;
+			}
+		}
+		else {
+			$this->error = generate_error('Permission error');
+		}
+	}
+	
+	function get_employee_details() {
+	  	//TODO: validaion
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$employee = $this->params['form']['employee'];
+
+
+			$employee = $this->Employee->find_employee_by_id($employee['id']);
+
+			if ($employee) {
+				$this->result = $employee;
+			}
+
+			else {
+				$this->error = generate_error('No such employee');
+			}
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
+	}
+	
+	function update_employee_details() {
+		//TODO: remove password field
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$employee  = $this->params['form']['employee'];
+			$this->Employee->save($employee);
+			$this->result = $employee;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	  
 	}
 	
-	function getEmployeeDetails($employee_id) {
-	  
+	function delete_employee() {
+	  	$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			$employee  = $this->params['form']['employee'];
+			$this->Employee->delete($employee['id']);
+			$this->result = array('result' => TRUE);
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 	
-	function updateEmployeeDetails($employee) {
-	  
-	}
-	
-	function deleteEmployee($employee_id) {
-	  
-	}
-	
-	function getEmployeeRole($employee_id, $passowrd) {
+	function get_employee_role($employee_id, $passowrd) {
 	  
 	}
 	
@@ -27,8 +95,17 @@ class EmployeesController extends AppController {
 	  
 	}
 	
-	function changePassword($employee_id, $old_password, $new_password) {
-	  
+	function change_password() {
+		$employee = $this->Employee->validate_employee();
+		if ($employee) {
+			//$employee  = $this->params['form']['employee'];
+			$employee['Employee']['password'] = $this->params['form']['employee']['new_password'];
+			$this->Employee->save($employee);
+			$this->result = $employee;
+		}
+		else {
+			$this->error = generate_error("Permission error");
+		}
 	}
 
 	// function index() {
