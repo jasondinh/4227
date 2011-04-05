@@ -2,32 +2,122 @@
 class UsersController extends AppController {
 
 	var $name = 'Users';
+	var $error;
+	var $result;	
 	
-	function addMember($member) {
+	function beforeRender() {
+	  if ($this->error) {
+	    $this->set('error', $this->error);
+	    debug($this->error);
+	  }
 	  
+	  if ($this->result) {
+	    $this->set('result', $this->result);
+	    debug($this->result);
+	  }
 	}
 	
-	function getProfile($username, $password) {
+	//input: post form of member array
+	function add_member() {
 	  
+	  if (isset($this->params['form']['member'])) {
+	    $member = $this->params['form']['member'];
+
+  	  $user = $this->User->find_user_by_username($member['username']);
+
+  	  if ($user) {
+  	    $this->error = generate_error('This user already existed. Please pick another username');
+  	  }
+  	  else {
+  	    $user = $this->User->find_user_by_email($member['email']);
+  	    if ($user) {
+  	      $this->error = generate_error('Duplicate email!');
+  	    }
+  	    else {
+
+  	      //TODO: check password complexity, check for missing field
+  	      if ($member['password'] == $member['repeat_password']) {
+  	        $this->User->create();
+  	        $this->User->save($member);
+  	        $this->result = $member;
+  	      }
+  	      else {
+  	        $this->error = generate_error('Wrong password');
+  	      }
+  	    }
+  	  }
+	  }
 	}
 	
-	function updateProfile($member) {
+	function get_profile() {
+	  $user = $this->User->validate_user();
 	  
+	  if ($user) {
+	    $this->result = $user;
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
+	  }
+	}
+	
+	function update_profile() {
+	  
+	  
+	  $user = $this->User->validate_user();
+	  
+	  if ($user) {
+	    if (isset($this->params['form']['member'])) {
+	      
+	      //TODO: do not allow username/password change here
+  	    $member = $this->params['form']['member'];
+  	    $member['id'] = $user['User']['id'];
+  	    
+  	    $this->User->save($member);
+  	    
+  	    $this->result = $member;
+  	  }
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
+	  }
 	}
 	
 	function deleteMember($username, $password) {
 	  
 	}
 	
-	function changePassword($username, $oldPassword, $newPassword) {
+	function change_password() {
+	  
+	  $user = $this->User->validate_user();
+	  
+	  if ($user) {
+	    if (isset($this->params['form']['member'])) {
+	      
+	      //TODO: do not allow user change anything else here except password
+  	    $member = $this->params['form']['member'];
+  	    $member['id'] = $user['User']['id'];
+  	    
+  	    if ($member['new_password'] == $member['repeat_new_password']) {
+  	      $member['password'] = $member['new_password'];
+	        $this->User->save($member);
+    	    $this->result = $member;
+	      }
+	      else {
+	        $this->error = generate_error('retype password');
+	      }
+  	  }
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
+	  }
 	  
 	}
 	
-	function viewHistory($username, $password) {
+	function view_history($username, $password) {
 	  
 	}
 	
-	function viewRewardsPoints($username, $password) {
+	function view_rewardsPoints($username, $password) {
 	  
 	}
 

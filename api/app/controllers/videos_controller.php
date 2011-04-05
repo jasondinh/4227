@@ -2,9 +2,31 @@
 class VideosController extends AppController {
 
 	var $name = 'Videos';
+	var $uses = array("Employee", "User");
+	var $error;
+	var $result;	
 	
-	function addVideo($video) {
+	function beforeRender() {
+	  if ($this->error) {
+	    $this->set('error', $this->error);
+	    debug($this->error);
+	  }
 	  
+	  if ($this->result) {
+	    $this->set('result', $this->result);
+	    debug($this->result);
+	  }
+	}
+	
+	function add_video() {
+	  $employee = $this->Employee->validate_employee();
+	  
+	  if ($employee) {
+	    $this->result = $employee;
+	  }
+	  else {
+	    $this->error = generate_error("wrong username/password");
+	  }
 	}
 	
 	function getVideoDetails($video_id) {

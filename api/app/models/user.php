@@ -20,10 +20,35 @@ class User extends AppModel {
 		)
 	);
 	
+	function validate_user() {
+	  $username = $_REQUEST['username'];
+	  $password = $_REQUEST['password'];
+	  
+	  $user = $this->find('first', array(
+	   'conditions' => array(
+	     'User.username' => $username,
+	     'User.password' => $password
+	   ),
+	   'recursive' => -1
+	  ));
+	  
+	  return $user;
+	}
+	
 	function find_user_by_id($user_id) {
 		$user = $this->find('first', array(
 			'conditions' => array(
 				'User.id' => $user_id
+			),
+			'recursive' => -1
+		));
+		return $user;
+	}
+	
+	function find_user_by_email($email) {
+		$user = $this->find('first', array(
+			'conditions' => array(
+				'User.email' => $email
 			),
 			'recursive' => -1
 		));
