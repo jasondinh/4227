@@ -22,7 +22,7 @@ class UsersController extends AppController {
       $result = $this->_login($this->data['User']['username'], $this->data['User']['password']);
       
       if (isset($result['error'])) {
-        $this->set('error', $result->error);
+        $this->set('error', $result['error']);
       }
       else {
         $this->Session->write('User.loggedin', '1');
@@ -32,6 +32,12 @@ class UsersController extends AppController {
       }
     }
   }
+
+function logout() {
+       $this->Session->write('User.loggedin', '0');
+       $this->Session->write('User.info', null);
+       $this->redirect(array('action' => 'index'));
+     }
   
   function refresh_session() {
     $user = $this->Session->read('User.info');
@@ -46,7 +52,7 @@ class UsersController extends AppController {
     );
     
     $result = $this->Api->post('users/get_profile', $data);
-    
+  // debug($result); 
     return $result;
   }
   

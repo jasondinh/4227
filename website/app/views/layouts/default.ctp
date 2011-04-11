@@ -107,7 +107,7 @@
     <div id="user_panel">
     	<h1>User Panel</h1>
          <ul>
-            <li><a href="#">Change password</a></li>
+    	<?php echo $this->Html->link('Change password', array('controller' => 'users', 'action' => 'change_password'));?>      
         </ul>
     </div>
     </div>

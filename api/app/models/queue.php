@@ -25,7 +25,8 @@ class Queue extends AppModel {
 		$queue = $this->find('first', array(
 			'conditions' => array(
 				'Queue.user_id' => $user_id,
-				'Queue.video_id' => $movie_id
+				'Queue.video_id' => $movie_id,
+'Queue.status' => '<> 0'
 			),
 		));
 		

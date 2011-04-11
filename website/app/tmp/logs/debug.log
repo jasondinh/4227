@@ -21,3 +21,5 @@
 2011-04-11 13:56:23 Notice: Notice (8): Undefined variable: error in [/Library/WebServer/Documents/4227/website/app/controllers/queues_controller.php, line 17]
 2011-04-11 13:59:42 Notice: Notice (8): Undefined variable: video_id in [/Library/WebServer/Documents/4227/website/app/controllers/queues_controller.php, line 26]
 2011-04-11 15:21:46 Notice: Notice (8): Undefined index:  error in [/Library/WebServer/Documents/4227/website/app/controllers/users_controller.php, line 119]
+2011-04-11 16:49:14 Notice: Notice (8): Trying to get property of non-object in [/Users/rasheilla/Localhost/4227/website/app/controllers/users_controller.php, line 25]
+2011-04-11 16:49:31 Notice: Notice (8): Trying to get property of non-object in [/Users/rasheilla/Localhost/4227/website/app/controllers/users_controller.php, line 25]

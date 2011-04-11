@@ -54,3 +54,5 @@
 2011-04-11 14:13:04 Warning: Warning (2): Invalid argument supplied for foreach() in [/Library/WebServer/Documents/4227/website/app/views/users/my_movies.ctp, line 8]
 2011-04-11 14:13:11 Warning: Warning (2): Invalid argument supplied for foreach() in [/Library/WebServer/Documents/4227/website/app/views/users/my_movies.ctp, line 8]
 2011-04-11 14:13:56 Warning: Warning (2): Invalid argument supplied for foreach() in [/Library/WebServer/Documents/4227/website/app/views/users/my_movies.ctp, line 8]
+2011-04-11 16:35:19 Warning: Warning (2): Cannot modify header information - headers already sent by (output started at /Users/rasheilla/Localhost/4227/website/cake/basics.php:110) in [/Users/rasheilla/Localhost/4227/website/cake/libs/controller/controller.php, line 742]
+2011-04-11 16:36:11 Warning: Warning (2): Cannot modify header information - headers already sent by (output started at /Users/rasheilla/Localhost/4227/website/cake/basics.php:110) in [/Users/rasheilla/Localhost/4227/website/cake/libs/controller/controller.php, line 742]
