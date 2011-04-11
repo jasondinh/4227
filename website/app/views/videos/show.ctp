@@ -8,7 +8,8 @@ foreach ($videos as $video) {
   echo 'Description: '.$video['Video']['description'].'<br />';
   echo 'Quantity: '.$video['Video']['quantity'].'<br />';
   echo 'Available quantity: '.$video['Video']['available'].'<br />';
-  echo '</div>';
+echo '<iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/'.$video['Video']['youtube'].'" frameborder="0" allowfullscreen></iframe><br />';  
+echo '</div>';
   
   echo $this->Html->link('Add to queue', array('controller' => 'queues', 'action' => 'add_video_queue', $video["Video"]['id']));
   echo '<br />';
