@@ -10,12 +10,10 @@ class QueuesController extends AppController {
 	function beforeRender() {
 		if ($this->error) {
 			$this->set('error', $this->error);
-			debug($this->error);
 		}
 
 		if ($this->result) {
 			$this->set('result', $this->result);
-			debug($this->result);
 		}
 	}
 	
@@ -25,31 +23,39 @@ class QueuesController extends AppController {
 		if ($user) {
 			$video = $this->params['form']['video'];
 			$tmp_user = $this->params['form']['user'];
-			
-			$queue = $this->Queue->find_queue_by_user_id_and_movie_id($tmp_user['id'], $video['id']);
-			
-			if ($queue) {
-				$this->error = generate_error('Duplicate queue');
+			$count = $this->Queue->find_pending_queue_by_user_id($tmp_user['id']);
+			if ($count < 3) {
+			  $queue = $this->Queue->find_queue_by_user_id_and_movie_id($tmp_user['id'], $video['id']);
+
+  			if ($queue) {
+  				$this->error = generate_error('Duplicate queue');
+  			}
+  			else {
+
+  				$video = $this->Video->find_video_by_id($video['id']);
+
+  				if ($video['Video']['available'] <= 0) {
+  					$this->error = generate_error('No more stock');
+  				}
+  				else {
+  					$queue = array(
+  						'user_id' => $tmp_user['id'],
+  						'video_id' => $video['Video']['id'],
+  						'timeStamp' => time(),
+  						'status' => 0
+  					);
+  					$this->Queue->create();
+  					$this->Queue->save($queue);
+  					$video['Video']['available']--;
+  					$this->Video->save($video);
+  					$this->result = array('result'=>TRUE);
+  				}
+  			}
 			}
 			else {
-				
-				$video = $this->Video->find_video_by_id($video['id']);
-				
-				if ($video['Video']['available'] <= 0) {
-					$this->error = generate_error('No more stock');
-				}
-				else {
-					$queue = array(
-						'user_id' => $tmp_user['id'],
-						'video_id' => $video['Video']['id']
-					);
-					$this->Queue->create();
-					$this->Queue->save($queue);
-					$video['Video']['available']--;
-					$this->Video->save($video);
-					$this->result = array('result'=>TRUE);
-				}
+			  $this->error = generate_error('You only can have maximum 3 movies in your queue');
 			}
+			
 		}
 		else {
 			$this->error = generate_error('Permission error');
@@ -65,7 +71,7 @@ class QueuesController extends AppController {
 			
 			$queue = $this->Queue->find_queue_by_user_id_and_movie_id($tmp_user['id'], $video['id']);
 			
-			if ($queue) {
+			if ($queue && $queue['Queue']['status'] == 0) {
 				
 				$this->Queue->delete($queue['Queue']['id']);
 				

@@ -9,9 +9,9 @@ if (isset($error)) {
 
 <div class="users form">
   <?php 
-echo $this->Form->create('User', array(
-  'action' => 'register'
-  ));
+  echo $this->Form->create('User', array(
+    'action' => 'register'
+    ));
 ?>
 <fieldset>
   <legend><?php __('Register User'); ?></legend>

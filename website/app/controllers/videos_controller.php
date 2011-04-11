@@ -2,98 +2,20 @@
 class VideosController extends AppController {
 
 	var $name = 'Videos';
-	var $uses = array("Employee", "User", 'Video');
-	var $error;
-	var $result;	
+	var $components = array('Api');
+	function show($id = null) {
+
+    if ($id) {
+      $videos = $this->Api->get('videos/get_video_details/'.$id);
+      $this->set('videos', $videos);
+    }
+    else {
+      $videos = $this->Api->get('videos/get_all');
+      $this->set('videos', $videos);
+    }
+  }
 	
-	function beforeRender() {
-	  if ($this->error) {
-	    $this->set('error', $this->error);
-	    debug($this->error);
-	  }
-	  
-	  if ($this->result) {
-	    $this->set('result', $this->result);
-	    debug($this->result);
-	  }
-	}
-	
-	function add_video() {
-		
-		//TODO: check video duplication
-		
-		$employee = $this->Employee->validate_employee();
-		
-		if ($employee) {
-			$video  = $this->params['form']['video'];
-			$this->Video->save($video);
-			$this->result = $video;
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	function get_video_details() {
-		
-		//TODO: validaion
-		
-		$video = $this->params['form']['video'];
-		
-		
-		$video = $this->Video->find_video_by_id($video['id']);
-		
-		if ($video) {
-			$this->result = $video;
-		}
-		
-		else {
-			$this->error = generate_error('No such video');
-		}
-	  
-	}
-	
-	function update_video_details() {
-		$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$video  = $this->params['form']['video'];
-			$this->Video->save($video);
-			$this->result = $video;
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	function delete_video() {
-	 	$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$video  = $this->params['form']['video'];
-			$this->Video->delete($video['id']);
-			$this->result = array('result' => TRUE);
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	// function show($id = null) {
-	//     
-	//     if ($id) {
-	//       $videos = $this->Video->find('all', array(
-	//        'conditions' => array(
-	//          'Video.id' => $id
-	//        )
-	//       ));
-	//       $this->set('videos', $videos);
-	//     }
-	//     else {
-	//       $videos = $this->Video->find('all', array(
-	//       ));
-	//       
-	//       $this->set('videos', $videos);
-	//     }
-	//   }
+	// 
 	// 
 	//   function index() {
 	//     $this->Video->recursive = 0;

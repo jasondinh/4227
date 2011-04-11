@@ -2,156 +2,149 @@
 class UsersController extends AppController {
 
 	var $name = 'Users';
-	var $uses = array('Employee', 'User');
-	var $error;
-	var $result;	
-	
-	function beforeRender() {
-	  if ($this->error) {
-	    $this->set('error', $this->error);
-	    debug($this->error);
-	  }
-	  
-	  if ($this->result) {
-	    $this->set('result', $this->result);
-	    debug($this->result);
-	  }
-	}
-	
-	//input: post form of member array
-	function add_member() {
-	  
-	  if (isset($this->params['form']['member'])) {
-	    $member = $this->params['form']['member'];
+	var $components = array('Api');
 
-  	  $user = $this->User->find_user_by_username($member['username']);
+  function register() {
+    if (!empty($this->data)) {
+      if ($this->data['User']['password'] == $this->data['User']['repeat_password']) {
+        $this->Api->post('users/add_member', $this->data);
+        $this->redirect(array('action' => 'index'));
+      }
+      else {
+        $this->set('error', 'Your password didn\'t match. Try again!');
+      }
+    }
+  }
+  
+  function login() {
+    if (!empty($this->data)) {
+      
+      $result = $this->_login($this->data['User']['username'], $this->data['User']['password']);
+      
+      if (isset($result['error'])) {
+        $this->set('error', $result->error);
+      }
+      else {
+        $this->Session->write('User.loggedin', '1');
+        $this->Session->write('User.info', $result);
+        $this->redirect(array('action' => 'index'));
+        return $result;
+      }
+    }
+  }
+  
+  function refresh_session() {
+    $user = $this->Session->read('User.info');
+    $result = $this->_login($user['User']['username'], $user['User']['password']);
+    $this->Session->write('User.info', $result);
+  }
+  
+  function _login($username, $password) {
+    $data = array(
+      'username' => $username,
+      'password' => $password,
+    );
+    
+    $result = $this->Api->post('users/get_profile', $data);
+    
+    return $result;
+  }
+  
+  function edit_profile() {
+    $this->refresh_session();
+    if (!empty($this->data)) {
 
-  	  if ($user) {
-  	    $this->error = generate_error('This user already existed. Please pick another username');
-  	  }
-  	  else {
-  	    $user = $this->User->find_user_by_email($member['email']);
-  	    if ($user) {
-  	      $this->error = generate_error('Duplicate email!');
-  	    }
-  	    else {
+      $user = $this->Session->read('User.info');
 
-  	      //TODO: check password complexity, check for missing field
-  	      if ($member['password'] == $member['repeat_password']) {
-  	        $this->User->create();
-  	        $this->User->save($member);
-  	        $this->result = $member;
-  	      }
-  	      else {
-  	        $this->error = generate_error('Wrong password');
-  	      }
-  	    }
-  	  }
-	  }
-	}
-	
-	function get_profile() {
-	  $user = $this->User->validate_user();
-	  
-	  if ($user) {
-	    $this->result = $user;
-	  }
-	  else {
-	    $this->error = generate_error('Wrong username/password!');
-	  }
-	}
-	
-	function update_profile() {
-	  
-	  
-	  $user = $this->User->validate_user();
-	  
-	  if ($user) {
-	    if (isset($this->params['form']['member'])) {
-	      
-	      //TODO: do not allow username/password change here
-  	    $member = $this->params['form']['member'];
-  	    $member['id'] = $user['User']['id'];
-  	    
-  	    $this->User->save($member);
-  	    
-  	    $this->result = $member;
-  	  }
-	  }
-	  else {
-	    $this->error = generate_error('Wrong username/password!');
-	  }
-	}
-	
-	function delete_member() {
-		if ($this->Employee->validate_employee())	{
-			$member = $this->params['form']['member'];
-			$user = $this->User->find_user_by_username($member['username']);
-			
-			if ($user) {
-				$this->User->delete($user['User']['id']);
-				$this->result = array('result'=> TRUE);
-			}
-			else {
-				$this->error = generate_error('No such user');
-			}
-		}
-		else {
-			$this->error = generate_error('Permission error');
-		}
-	}
-	
-	function change_password() {
-	  
-	  $user = $this->User->validate_user();
-	  
-	  if ($user) {
-	    if (isset($this->params['form']['member'])) {
-	      
-	      //TODO: do not allow user change anything else here except password
-  	    $member = $this->params['form']['member'];
-  	    $member['id'] = $user['User']['id'];
-  	    
-  	    if ($member['new_password'] == $member['repeat_new_password']) {
-  	      $member['password'] = $member['new_password'];
-	        $this->User->save($member);
-    	    $this->result = $member;
-	      }
-	      else {
-	        $this->error = generate_error('retype password');
-	      }
-  	  }
-	  }
-	  else {
-	    $this->error = generate_error('Wrong username/password!');
-	  }
-	  
-	}
-	
-	function view_history() {
-	  
-	}
-	
-	function view_rewardsPoints() {
-	  
-	}
+      $data = $this->data;
 
-  // function register() {
-  //     if (!empty($this->data)) {
-  //       if ($this->data['User']['password'] == $this->data['User']['repeat_password']) {
-  //         $data = $this->data['User'];
-  //         $result = $this->register_api($data['username'], $data['password'], $data['first_name'],
-  //         $data['last_name'], $data['age'], $data['address'], $data['city'], $data['zip'], $data['country'],
-  //         $data['telephone'], $data['email']);
-  //         if (isset($result['error'])) {
-  //           $this->set('error', $result['error']);
-  //         }
-  //       }
-  //       else {
-  //         $this->set('error', 'Your password didn\'t match. Try again!');
-  //       }
-  //     }
-  //   }
+      $data['username'] = $user['User']['username'];
+      $data['password'] = $user['User']['password'];
+
+      $result = $this->Api->post('users/update_profile', $data);
+      //debug($result);
+      if (isset($result['error'])) {
+        $this->set('error', $result->error);
+      }
+      $this->refresh_session();
+    }
+  }
+  
+  function change_password() {
+    if (!empty($this->data)) {
+      $this->refresh_session();
+      $user = $this->Session->read('User.info');
+      $data = $this->data['User'];
+      $data['username'] = $user['User']['username'];
+      $data['id'] = $user['User']['id'];
+      if ($data['password'] != $user['User']['password'])  { 
+        $this->set('error', 'Your password is incorrect');
+      }
+      else if ($data['new_password'] != $data['new_password_repeat']) {
+        $this->set('error', 'Your new password does not match');
+      }
+      else if ($data['new_password'] == '' || $data['new_password'] == null) {
+        $this->set('error', 'Your new password is blank');
+      }
+      else if ($data['password'] == $user['User']['password'])  {
+        $data = array('User' => $data);
+        $data['username'] = $user['User']['username'];
+        $data['password'] = $data['User']['password'];
+        $result = $this->Api->post('users/change_password', $data);
+        if (isset($result['error'])) {
+          $this->set('error', $result['error']);
+        }
+        else {
+          $user['User']['password'] = $data['User']['new_password'];
+          $this->Session->write('User.info', $user);
+        }
+        $this->refresh_session();
+      }
+    }
+  }
+  
+  
+  //check out all movies in queues
+  
+  function checkout() {
+    $user = $this->Session->read('User.info');
+    
+    $data = array(
+     'username' => $user['User']['username'],
+     'password' => $user['User']['password']
+    );
+    
+    $result = $this->Api->post('users/checkout', $data);
+    
+    if (isset($result['error'])) {
+      $this->set('error', $result['error']);
+    }
+  }
+  
+  //current queue
+  
+  function my_movies() {
+	    // $this->refresh_session();
+	    //     $user = $this->Session->read('User.info');
+	    //     $queue = $this->User->Queue->find('all', array(
+	    //       'conditions' => array(
+	    //        'Queue.user_id' => $user['User']['id'],
+	    //        'Queue.status' => 1
+	    //       )
+	    //     ));
+	    $user = $this->Session->read('User.info');
+	    $data = array(
+	     'username' => $user['User']['username'],
+	     'password' => $user['User']['password']
+	    );
+	    
+	    $result = $this->Api->post('users/my_movies', $data);
+	    //debug($result);
+	  $this->set('queues', $result);
+	}
+  
+  
+  
   //   
   //   function register_api($username, $password, $first_name, $last_name, $age, $address, $city, $zip, $country, $tel, $email) {
   //     //TODO: validation for username, password
@@ -179,23 +172,7 @@ class UsersController extends AppController {
   //     }
   //   }
   //   
-  //   function login() {
-  //     if (!empty($this->data)) {
-  //       $user = $this->data['User']['username'];
-  //       $pass = $this->data['User']['password'];
-  //       
-  //       $result = $this->login_api($user, $pass);
-  //       
-  //       if (isset($result['error'])) {
-  //         $this->set('error', $result['error']);
-  //       }
-  //       else {
-  //         $this->Session->write('User.loggedin', '1');
-  //         $this->Session->write('User.info', $result);
-  //         $this->redirect(array('action' => 'index'));
-  //       }      
-  //     }
-  //   }
+  
   //   
   //   function login_api($username, $password) {
   //     $user = $this->User->find_user_by_username($username);    
@@ -214,21 +191,7 @@ class UsersController extends AppController {
   //     $this->redirect(array('action' => 'index'));
   //   }
   // 
-  //  function edit_profile() {
-  //     if (!empty($this->data)) {
-  //       $this->refresh_session();
-  //       $user = $this->Session->read('User.info');
-  //       
-  //       $data = $this->data['User'];
-  //       
-  //       $result = $this->edit_profile_api($user['User']['username'], $user['User']['password'], $data['first_name'],$data['last_name'], $data['age'], $data['address'], $data['city'], $data['zip'], $data['country'], $data['telephone'], $data['email']);
-  //       if (isset($result['error'])) {
-  //         $this->set('error', $result['error']);
-  //       }
-  //       
-  //       $this->refresh_session();
-  //     }
-  //  }
+  
   //  
   //  function edit_profile_api($username, $password, $first_name, $last_name, $age, $address, $city, $zip, $country, $tel, $email) {
   //    $user = $this->User->check_login($username, $password);

@@ -3,26 +3,26 @@ class UsersController extends AppController {
 
 	var $name = 'Users';
 	var $uses = array('Employee', 'User');
+	var $components = array('Api');
 	var $error;
 	var $result;	
 	
 	function beforeRender() {
 	  if ($this->error) {
 	    $this->set('error', $this->error);
-	    debug($this->error);
 	  }
 	  
 	  if ($this->result) {
 	    $this->set('result', $this->result);
-	    debug($this->result);
 	  }
 	}
 	
 	//input: post form of member array
+	//TODO: email user
 	function add_member() {
-	  
-	  if (isset($this->params['form']['member'])) {
-	    $member = $this->params['form']['member'];
+	  //debug($this->params['form']);
+	  if (isset($this->params['form']['User'])) {
+	    $member = $this->params['form']['User'];
 
   	  $user = $this->User->find_user_by_username($member['username']);
 
@@ -38,15 +38,43 @@ class UsersController extends AppController {
 
   	      //TODO: check password complexity, check for missing field
   	      if ($member['password'] == $member['repeat_password']) {
+  	        $member['status'] = 0;
+  	        $member['validation'] = md5($this->Api->genRandomString());
   	        $this->User->create();
   	        $this->User->save($member);
   	        $this->result = $member;
+  	        $body = "Hi,\n
+  	        \n
+  	        Welcome to WowRental. To activate your account, please click on the following link:\n
+  	        \n
+  	        "."http://localhost/4227/api/users/activate/".$this->User->getInsertID()."/".$member['validation']."\n
+  	        \n
+  	        Regards,
+  	        WowRental Team";
+  	        $this->Api->send_email('Welcome to WowRental', $body, $member['email']);
   	      }
   	      else {
   	        $this->error = generate_error('Wrong password');
   	      }
   	    }
   	  }
+	  }
+	}
+	
+	function activate($id, $validation) {
+	  $user = $this->User->find('first', array(
+	   'conditions' => array(
+	     'User.id' => $id,
+	     'User.validation' => $validation,
+	     'User.status' => 0
+	   )
+	  ));
+	  if ($user) {
+	    $user['User']['status'] = 1;
+	    $this->User->save($user);
+	  }
+	  else {
+	    $this->error = generate_error("No such user/validation code combination or this user has been activated.");
 	  }
 	}
 	
@@ -67,10 +95,10 @@ class UsersController extends AppController {
 	  $user = $this->User->validate_user();
 	  
 	  if ($user) {
-	    if (isset($this->params['form']['member'])) {
+	    if (isset($this->params['form']['User'])) {
 	      
 	      //TODO: do not allow username/password change here
-  	    $member = $this->params['form']['member'];
+  	    $member = $this->params['form']['User'];
   	    $member['id'] = $user['User']['id'];
   	    
   	    $this->User->save($member);
@@ -101,18 +129,53 @@ class UsersController extends AppController {
 		}
 	}
 	
+	function my_movies() {
+	  $user = $this->User->validate_user();
+	  
+	  if ($user) {
+	    
+	    $queue = $this->User->Queue->find('all', array(
+  	    'conditions' => array(
+  	     'Queue.user_id' => $user['User']['id'],
+  	     'Queue.status' => 0
+  	    )
+  	  ));
+  	  
+  	  
+  	  $this->result = $queue;
+  	  
+  	  
+	    // if (isset($this->params['form']['User'])) {
+	    //         //TODO: do not allow user change anything else here except password
+	    //         $member = $this->params['form']['User'];
+	    //         $member['id'] = $user['User']['id'];
+	    //         
+	    //         if ($member['new_password'] == $member['new_password_repeat']) {
+	    //           $member['password'] = $member['new_password'];
+	    //           $this->User->save($member);
+	    //           $this->result = $member;
+	    //         }
+	    //         else {
+	    //           $this->error = generate_error('retype password');
+	    //         }
+	    //       }
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
+	  }
+	}
+	
 	function change_password() {
 	  
 	  $user = $this->User->validate_user();
 	  
 	  if ($user) {
-	    if (isset($this->params['form']['member'])) {
-	      
+	    if (isset($this->params['form']['User'])) {
 	      //TODO: do not allow user change anything else here except password
-  	    $member = $this->params['form']['member'];
+  	    $member = $this->params['form']['User'];
   	    $member['id'] = $user['User']['id'];
   	    
-  	    if ($member['new_password'] == $member['repeat_new_password']) {
+  	    if ($member['new_password'] == $member['new_password_repeat']) {
   	      $member['password'] = $member['new_password'];
 	        $this->User->save($member);
     	    $this->result = $member;
@@ -126,6 +189,27 @@ class UsersController extends AppController {
 	    $this->error = generate_error('Wrong username/password!');
 	  }
 	  
+	}
+	
+	function checkout() {
+	  $user = $this->User->validate_user();
+	  if ($user) {
+	    $queues = $this->User->Queue->find('all', array(
+	      'Queue.user_id' => $user['User']['id'],
+	      'Queue.status' => 0
+	    ));
+	    
+	    foreach ($queues as $queue) {
+	      $queue['Queue']['status'] = 1;
+	      $queue['Queue']['timeStamp'] = time();
+	      $this->User->Queue->save($queue);
+	    }
+	    
+	    $this->result = array('result' => TRUE);
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
+	  }
 	}
 	
 	function view_history() {

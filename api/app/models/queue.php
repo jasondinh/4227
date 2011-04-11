@@ -31,5 +31,15 @@ class Queue extends AppModel {
 		
 		return $queue;
 	}
+	
+	function find_pending_queue_by_user_id($user_id) {
+	  $count = $this->find('count', array(
+	   'conditions' => array(
+				'Queue.user_id' => $user_id,
+				'Queue.status' => 0
+			),
+	  ));
+	  return $count;
+	}
 }
 ?>

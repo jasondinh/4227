@@ -27,7 +27,8 @@ class User extends AppModel {
 	  $user = $this->find('first', array(
 	   'conditions' => array(
 	     'User.username' => $username,
-	     'User.password' => $password
+	     'User.password' => $password,
+	     'User.status' => 1 //do not return user who did not activate his/her account
 	   ),
 	   'recursive' => -1
 	  ));

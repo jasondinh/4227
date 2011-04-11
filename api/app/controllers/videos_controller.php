@@ -9,12 +9,10 @@ class VideosController extends AppController {
 	function beforeRender() {
 	  if ($this->error) {
 	    $this->set('error', $this->error);
-	    debug($this->error);
 	  }
 	  
 	  if ($this->result) {
 	    $this->set('result', $this->result);
-	    debug($this->result);
 	  }
 	}
 	
@@ -34,14 +32,20 @@ class VideosController extends AppController {
 		}
 	}
 	
-	function get_video_details() {
+	function get_all() {
+	  $video = $this->Video->find('all');
+	  $this->result = $video;
+	}
+	
+	function get_video_details($id) {
 		
 		//TODO: validaion
 		
-		$video = $this->params['form']['video'];
-		
-		
-		$video = $this->Video->find_video_by_id($video['id']);
+		$video = $this->Video->find('all', array(
+		  'conditions' => array(
+		    'Video.id' => $id,
+		  )
+		));
 		
 		if ($video) {
 			$this->result = $video;
