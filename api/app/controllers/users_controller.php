@@ -2,10 +2,32 @@
 class UsersController extends AppController {
 
 	var $name = 'Users';
-	var $uses = array('Employee', 'User');
-	var $components = array('Api');
+	var $uses = array('Employee', 'User', 'Payment');
+	var $components = array('Api', 'Paypal');
 	var $error;
 	var $result;	
+	
+	function help() {
+	  $user = $this->User->validate_user();
+	  
+	  if ($user) {  
+	    $subject = 'Query from WowRental';
+	    
+	    $body = 'Hi management team,'."\n".'
+	    '."\n".'
+'.$user['User']['username'].' ('.$user['User']['email'].') from WowRental asks this question:'."\n".'
+	    '."\n".'
+'.$this->params['form']['User']['question'].''."\n".'
+';
+
+    $to = 'wowrental2@gmail.com';
+    $from = $user['User']['email'];
+	    $this->Api->send_email($subject, $body, $to, $from);
+	  }
+	  else {
+	    $this->error = generate_error('Permission error');
+	  }
+	}
 	
 	function beforeRender() {
 	  if ($this->error) {
@@ -14,6 +36,28 @@ class UsersController extends AppController {
 	  
 	  if ($this->result) {
 	    $this->set('result', $this->result);
+	  }
+	}
+	
+	function show_all() {
+	  $user = $this->User->find('all');
+	  $this->result = $user;
+	}
+	
+	function history() {
+	  $user = $this->User->validate_user();
+	  
+	  if ($user) {  
+	    $queue = $this->User->Queue->find('all', array(
+  	    'conditions' => array(
+	      'Queue.user_id' => $user['User']['id'],
+  	    'Queue.status' => '1'
+  	    )
+  	  ));
+  	  $this->result = $queue;
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
 	  }
 	}
 	
@@ -45,12 +89,12 @@ class UsersController extends AppController {
   	        $this->result = $member;
   	        $body = "Hi,\n
   	        \n
-  	        Welcome to WowRental. To activate your account, please click on the following link:\n
+Welcome to WowRental. To activate your account, please click on the following link:\n
   	        \n
   	        "."http://localhost/4227/api/users/activate/".$this->User->getInsertID()."/".$member['validation']."\n
   	        \n
-  	        Regards,
-  	        WowRental Team";
+Regards,
+WowRental Team";
   	        $this->Api->send_email('Welcome to WowRental', $body, $member['email']);
   	      }
   	      else {
@@ -72,9 +116,23 @@ class UsersController extends AppController {
 	  if ($user) {
 	    $user['User']['status'] = 1;
 	    $this->User->save($user);
+	    $this->redirect('http://localhost/4227/website/');
 	  }
 	  else {
 	    $this->error = generate_error("No such user/validation code combination or this user has been activated.");
+	  }
+	}
+	
+	function show($id) {
+	  $user = $this->User->validate_employee();
+	  if ($user) {
+	    $user = $this->User->find('first', array(
+	     'conditions' => array('User.id' => $id)
+	    ));
+	    $this->result = $user;
+	  }
+	  else {
+	    $this->error = generate_error('Wrong username/password!');
 	  }
 	}
 	
@@ -94,12 +152,13 @@ class UsersController extends AppController {
 	  
 	  $user = $this->User->validate_user();
 	  
-	  if ($user) {
+	  if ($user || $this->User->validate_employee()) {
 	    if (isset($this->params['form']['User'])) {
 	      
-	      //TODO: do not allow username/password change here
   	    $member = $this->params['form']['User'];
-  	    $member['id'] = $user['User']['id'];
+  	    if ($user) {
+  	      $member['id'] = $user['User']['id'];
+  	    }
   	    
   	    $this->User->save($member);
   	    
@@ -111,18 +170,11 @@ class UsersController extends AppController {
 	  }
 	}
 	
-	function delete_member() {
-		if ($this->Employee->validate_employee())	{
-			$member = $this->params['form']['member'];
-			$user = $this->User->find_user_by_username($member['username']);
-			
-			if ($user) {
-				$this->User->delete($user['User']['id']);
-				$this->result = array('result'=> TRUE);
-			}
-			else {
-				$this->error = generate_error('No such user');
-			}
+	function remove() {
+		if ($this->User->validate_employee())	{
+			$member = $this->params['form']['User'];
+			$this->User->delete($member['id']);
+			$this->result = array('result'=> TRUE);
 		}
 		else {
 			$this->error = generate_error('Permission error');
@@ -191,26 +243,84 @@ class UsersController extends AppController {
 	  
 	}
 	
-	function checkout() {
-	  $user = $this->User->validate_user();
-	  if ($user) {
-	    $queues = $this->User->Queue->find('all', array(
-	      'Queue.user_id' => $user['User']['id'],
-	      'Queue.status' => 0
-	    ));
-	    
-	    foreach ($queues as $queue) {
-	      $queue['Queue']['status'] = 1;
-	      $queue['Queue']['timeStamp'] = time();
-	      $this->User->Queue->save($queue);
-	    }
-	    
-	    $this->result = array('result' => TRUE);
-	  }
-	  else {
-	    $this->error = generate_error('Wrong username/password!');
-	  }
-	}
+  function checkout() {
+    $user = $this->User->validate_user();
+    if ($user) {
+      $count  = $this->User->Queue->find_pending_queue_by_user_id($user['User']['id']);
+      if ($count > 0)  {
+        
+        if ($user['User']['point'] / 10 >= $count) {
+          $amount = 0;
+          $user['User']['point'] -= 10*$count;
+        }
+        else {
+          $redemp = floor($user['User']['point'] / 10);
+          $amount = ($count - $redemp) * 3;
+          $user['User']['point'] -= 10 * $redemp;
+        }
+        
+        $user['User']['point'] += $count;
+        $this->User->save($user);
+        if (isset($this->params['form'], $this->params['form']['User'])) {
+          $details = array(
+            'first_name' => $user['User']['first_name'],
+            'last_name' => $user['User']['last_name'],
+            'type' => $this->params['form']['User']['type'],
+            'number' => $this->params['form']['User']['number'],
+            'expire_month' => $this->params['form']['User']['expire_month'],
+            'expire_year' => $this->params['form']['User']['expire_year'],
+            'cvv' => $this->params['form']['User']['cvv'],
+            'address1' => $user['User']['address'],
+            'address2' => '',
+            'city' => $user['User']['city'],
+            'state' => 'SG',
+            'zip' => $user['User']['zip'],
+            'country' => 'SG',
+            'amount' => $amount + 1,
+            );
+          $this->Paypal->do_payment($details);
+
+          $result = $this->Paypal->do_payment($details);
+          if("SUCCESS" == strtoupper($result["ACK"]) || "SUCCESSWITHWARNING" == strtoupper($result["ACK"])) {
+            $queues = $this->User->Queue->find('all', array(
+            'conditions' => array(
+              'Queue.user_id' => $user['User']['id'],
+              'Queue.status' => 0
+              )
+              ));
+
+            foreach ($queues as $queue) {
+              $queue['Queue']['status'] = 1;
+              $this->User->Queue->save($queue);
+              $payment = array(
+                'queue_id' => $queue['Queue']['id'],
+                'timeStamp' => time(),
+                'transaction_id' => $result['TRANSACTIONID'],
+                'amount' => $this->params['form']['User']['amount']
+              );
+              $this->Payment->save($payment);
+            }
+            
+            $body = "Hi ". $user['User']['username'].",\n
+            \n
+Thank you for your payment of ".$amount." SGD to WowRental. Your order is being processed right now and we will get back to you as soon as possible.\n
+\n
+Regards,\n
+WowRental team";
+            $this->Api->send_email('Confirmation of your payment', $body, $user['User']['email']);
+
+          }
+          $this->result = $result;
+        }
+      }  
+      else {
+        $this->error = generate_error('No movie in queue');
+      }    
+    }
+    else {
+      $this->error = generate_error('Wrong username/password!');
+    }
+  }
 	
 	function view_history() {
 	  

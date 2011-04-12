@@ -27,6 +27,7 @@
  * to use (in this case, /app/views/pages/home.ctp)...
  */
 	Router::connect('/', array('controller' => 'users', 'action' => 'my_movies'));
+	Router::connect('/admin/login', array('controller' => 'employees', 'action' => 'login', 'admin'=>true));
 /**
  * ...and connect the rest of 'Pages' controller's urls.
  */

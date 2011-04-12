@@ -17,6 +17,11 @@ class QueuesController extends AppController {
 		}
 	}
 	
+	function show_all() {
+	  $queues = $this->Queue->find('all');
+	  $this->result = $queues;
+	}
+	
 	function add_video_queue() {
 		$user = $this->User->validate_user();
 		
@@ -89,6 +94,78 @@ class QueuesController extends AppController {
 		else {
 			$this->error = generate_error('Permission error');
 		}
+	}
+	
+	function edit() {
+	  $user = $this->User->validate_employee();
+	  if ($user) {
+	    
+	    $queue = $this->Queue->find('first', array(
+	     'conditions' => array(
+	       'Queue.id' => $this->params['form']['Queue']['id']
+	     )
+	    ));
+	    
+	    if ($this->params['form']['Queue']['status'] == 3 && $queue['Queue']['status'] !=3) {
+	      $video = $this->Queue->Video->find('first', array(
+	        'conditions' => array(
+	         'Video.id' => $queue['Queue']['video_id']
+	        )
+	      ));
+	      
+	      $video['Video']['available']++;
+	      $this->Queue->Video->save($video);
+	    }
+	    $this->Queue->save($this->params['form']);
+	    $this->result = array('result' => TRUE);
+	  }
+	  else {
+	    $this->error = generate_error('Permission error');
+	  }
+	}
+	
+	
+	function remove() {
+	  $user = $this->User->validate_employee();
+	  if ($user) {
+	    $queue = $this->Queue->find('first', array(
+	     'conditions' => array(
+	       'Queue.id' => $this->params['form']['Queue']['id']
+	     )
+	    ));
+	    if ($queue['Queue']['status'] != 3) {
+	      $video = $this->Queue->Video->find('first', array(
+	        'conditions' => array(
+	         'Video.id' => $queue['Queue']['video_id']
+	        )
+	      ));
+	      
+	      $video['Video']['available']++;
+	      $this->Queue->Video->save($video);
+	    }
+	    $this->Queue->delete($this->params['form']['Queue']['id']);
+	    $this->result = array('result' => TRUE);
+	  }
+	  else {
+	    $this->error = generate_error('Permission error');
+	  }
+	}
+	
+	function show($id) {
+	  $user = $this->User->validate_employee();
+	  if ($user) {
+	    $queue = $this->Queue->find('first', array(
+	      'conditions' => array(
+	       'Queue.id' => $id
+	      )
+	     
+	    ));
+	    
+	    $this->result = $queue;
+	  }
+	  else {
+	    $this->error = generate_error('Permission error');
+	  }
 	}
 
 	// function index() {

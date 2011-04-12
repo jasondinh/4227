@@ -1,7 +1,7 @@
 <?php
 App::import('Component', 'Email');
 class ApiComponent extends EmailComponent {
-  function send_email($subject, $body, $to) {
+  function send_email($subject, $body, $to, $from = null) {
     $this->smtpOptions = array(
          'port'=>'465', 
          'timeout'=>'30',
@@ -11,6 +11,10 @@ class ApiComponent extends EmailComponent {
     );
     $this->delivery = 'smtp';
     $this->sendAs = 'text';
+    
+    if ($from) {
+      $this->replyTo = $from;
+    }
     
     $this->to = $to;
     $this->subject = $subject;

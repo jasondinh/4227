@@ -17,12 +17,36 @@ class User extends AppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
+		),
+		'Comment' => array(
+			'className' => 'Comment',
+			'foreignKey' => 'user_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
 		)
 	);
+	
+	function validate_employee() {
+	  $user = $this->validate_user();
+	  if ($user['User']['roles'] == 1) {
+	    return $user;
+	  }
+	  else {
+	    return null;
+	  }
+	}
 	
 	function validate_user() {
 	  $username = $_REQUEST['username'];
 	  $password = $_REQUEST['password'];
+	  
 	  
 	  $user = $this->find('first', array(
 	   'conditions' => array(

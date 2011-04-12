@@ -1,30 +1,43 @@
 <div class="users form">
 <?php echo $this->Form->create('User');?>
 	<fieldset>
- 		<legend><?php __('Admin Add User'); ?></legend>
+ 		<legend><?php __('Edit User'); ?></legend>
 	<?php
-		echo $this->Form->input('username');
-		echo $this->Form->input('password');
-		echo $this->Form->input('first_name');
-		echo $this->Form->input('last_name');
-		echo $this->Form->input('age');
-		echo $this->Form->input('address');
-		echo $this->Form->input('city');
-		echo $this->Form->input('country');
-		echo $this->Form->input('telephone');
-		echo $this->Form->input('point');
-		echo $this->Form->input('email');
-		echo $this->Form->input('zip');
+		echo $this->Form->input('id', array(
+		  'type' => 'hidden',		));
+		echo $this->Form->input('username', array(
+		));
+		echo $this->Form->input('password', array(
+		));
+		echo $this->Form->input('repeat_password', array(
+		  'type'=> 'password'
+		));
+		echo $this->Form->input('first_name', array(
+		));
+		echo $this->Form->input('last_name', array(
+		));
+		echo $this->Form->input('age', array(
+		));
+		echo $this->Form->input('address', array(
+		));
+		echo $this->Form->input('city', array(
+		));
+		echo $this->Form->input('country', array(
+		));
+		echo $this->Form->input('telephone', array(
+		));
+		echo $this->Form->input('point', array(
+		));
+		echo $this->Form->input('email', array(
+		));
+		echo $this->Form->input('zip', array(
+		));
+		echo $this->Form->input('roles', array(
+		  'label' => 'Role',
+		  'type' => 'select',
+		  'options' => array('User', 'Admin')
+		));
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit', true));?>
-</div>
-<div class="actions">
-	<h3><?php __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php echo $this->Html->link(__('List Users', true), array('action' => 'index'));?></li>
-		<li><?php echo $this->Html->link(__('List Queues', true), array('controller' => 'queues', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Queue', true), array('controller' => 'queues', 'action' => 'add')); ?> </li>
-	</ul>
 </div>

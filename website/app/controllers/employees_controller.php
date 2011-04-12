@@ -2,22 +2,52 @@
 class EmployeesController extends AppController {
 
 	var $name = 'Employees';
-	var $error;
-	var $result;	
+	var $components = array('Api');
 	
-	function beforeRender() {
-	  if ($this->error) {
-	    $this->set('error', $this->error);
-	    debug($this->error);
-	  }
-	  
-	  if ($this->result) {
-	    $this->set('result', $this->result);
-	    debug($this->result);
-	  }
-	}
+	function admin_login() {
+	  $this->layout = 'admin';
+      if (!empty($this->data)) {
+        $result = $this->_login($this->data['Employee']['username'], $this->data['Employee']['password']);
+
+        if (isset($result['error'])) {
+          $this->set('error', $result['error']);
+        }
+        else {
+          $this->Session->write('Employee.loggedin', '1');
+          $this->Session->write('Employee.info', $result);
+          $this->redirect(array('action' => 'admin_index'));
+          return $result;
+        }
+      }
+    }
+    
+    function admin_index() {
+      
+    }
+    
+
+    function logout() {
+      $this->Session->write('Employee.loggedin', '0');
+      $this->Session->write('Employee.info', null);
+      $this->redirect(array('action' => 'login'));
+    }
+
+    function refresh_session() {
+      $user = $this->Session->read('Employee.info');
+      $result = $this->_login($user['Employee']['username'], $user['Employee']['password']);
+      $this->Session->write('Employee.info', $result);
+    }
+
+    function _login($username, $password) {
+      $data = array(
+        'eUsername' => $username,
+        'ePassword' => $password,
+        );
+      $result = $this->Api->post('employees/get_profile', $data);
+      return $result;
+    }
 	
-	function add_employee() {
+	function add() {
 		$tmp_employee = $this->Employee->validate_employee();
 		
 		if ($tmp_employee) {

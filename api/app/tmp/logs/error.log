@@ -21,3 +21,6 @@
 2011-04-11 16:33:15 Warning: Warning (512): <span style="color:Red;text-align:left"><b>SQL Error:</b> 1054: Unknown column 'User.status' in 'where clause'</span> in [/Users/rasheilla/Localhost/4227/api/cake/libs/model/datasources/dbo_source.php, line 684]
 2011-04-11 16:35:19 Warning: Warning (512): <span style="color:Red;text-align:left"><b>SQL Error:</b> 1054: Unknown column 'User.status' in 'where clause'</span> in [/Users/rasheilla/Localhost/4227/api/cake/libs/model/datasources/dbo_source.php, line 684]
 2011-04-11 16:36:11 Warning: Warning (512): <span style="color:Red;text-align:left"><b>SQL Error:</b> 1054: Unknown column 'User.status' in 'where clause'</span> in [/Users/rasheilla/Localhost/4227/api/cake/libs/model/datasources/dbo_source.php, line 684]
+2011-04-13 00:44:43 Warning: Warning (2): Missing argument 1 for GenresController::show() in [/Library/WebServer/Documents/4227/api/app/controllers/genres_controller.php, line 32]
+2011-04-13 01:15:22 Warning: Warning (2): Invalid argument supplied for foreach() in [/Library/WebServer/Documents/4227/api/app/controllers/videos_controller.php, line 55]
+2011-04-13 01:52:20 Warning: Warning (2): Missing argument 1 for ActorsController::get_actor_details() in [/Library/WebServer/Documents/4227/api/app/controllers/actors_controller.php, line 54]

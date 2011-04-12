@@ -3,32 +3,37 @@
 	<fieldset>
  		<legend><?php __('Admin Edit Video'); ?></legend>
 	<?php
-		echo $this->Form->input('id');
-		echo $this->Form->input('name');
-		echo $this->Form->input('description');
-		echo $this->Form->input('imbd');
-		echo $this->Form->input('quantity');
-		echo $this->Form->input('available');
-		echo $this->Form->input('genre_id');
-		echo $this->Form->input('Actor');
-		echo $this->Form->input('Photo');
+	//debug($video);
+		echo $this->Form->input('id', array(
+		  'value' => $video[0]['Video']['id'],
+		  'type' => 'hidden'
+		));
+		echo $this->Form->input('name', array(
+		  'value' => $video[0]['Video']['name'],
+		));
+		echo $this->Form->input('description', array(
+		  'value' => $video[0]['Video']['description'],
+		));
+		echo $this->Form->input('imbd', array(
+		  'value' => $video[0]['Video']['imbd'],
+		));
+		echo $this->Form->input('quantity', array(
+		  'value' => $video[0]['Video']['quantity'],
+		));
+		echo $this->Form->input('available', array(
+		  'value' => $video[0]['Video']['available'],
+		));
+		echo $this->Form->input('youtube', array(
+		  'value' => $video[0]['Video']['youtube'],
+		));
+		echo $this->Form->input('genre_id', array(
+		  'options' => $genres,
+		));
+		echo $this->Form->input('Actor', array(
+		  'options' => $actors,
+		));
+		//echo $this->Form->input('Photo');
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit', true));?>
-</div>
-<div class="actions">
-	<h3><?php __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php echo $this->Html->link(__('Delete', true), array('action' => 'delete', $this->Form->value('Video.id')), null, sprintf(__('Are you sure you want to delete # %s?', true), $this->Form->value('Video.id'))); ?></li>
-		<li><?php echo $this->Html->link(__('List Videos', true), array('action' => 'index'));?></li>
-		<li><?php echo $this->Html->link(__('List Genres', true), array('controller' => 'genres', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Genre', true), array('controller' => 'genres', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Queues', true), array('controller' => 'queues', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Queue', true), array('controller' => 'queues', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Actors', true), array('controller' => 'actors', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Actor', true), array('controller' => 'actors', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Photos', true), array('controller' => 'photos', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Photo', true), array('controller' => 'photos', 'action' => 'add')); ?> </li>
-	</ul>
 </div>

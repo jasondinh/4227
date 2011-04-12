@@ -9,20 +9,39 @@ class ActorsController extends AppController {
 	function beforeRender() {
 	  if ($this->error) {
 	    $this->set('error', $this->error);
-	    debug($this->error);
 	  }
 	  
 	  if ($this->result) {
 	    $this->set('result', $this->result);
-	    debug($this->result);
 	  }
 	}
-	function add_actor() {
+	
+	function show_all() {
+	  $actors = $this->Actor->find('all');
+	  $this->result = $actors;
+	}
+	
+	function show($id) {
+	  $actor = $this->Actor->find('first', array(
+	   'conditions' => array(
+	     'Actor.id' => $id
+	   )
+	  ));
+	  
+	  if ($actor) {
+	    $this->result = $actor;
+	  }
+	  else {
+	    $this->error = generate_error('No such actor');
+	  }
+	}
+	
+	function add() {
 		
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		
 		if ($employee) {
-			$actor  = $this->params['form']['actor'];
+			$actor  = $this->params['form'];
 			$this->Actor->save($actor);
 			$this->result = $actor;
 		}
@@ -32,12 +51,12 @@ class ActorsController extends AppController {
 	  
 	}
 	
-	function get_actor_details() {
+	function get_actor_details($id) {
 		
 	  	//TODO: validaion
-		$actor = $this->params['form']['actor'];
+		//$actor = $this->params['form']['actor'];
 		
-		$actor = $this->Actor->find_actor_by_id($actor['id']);
+		$actor = $this->Actor->find_actor_by_id($id);
 		
 		if ($actor) {
 			$this->result = $actor;
@@ -49,9 +68,10 @@ class ActorsController extends AppController {
 	}
 	
 	function update_actor_details() {
-	  	$employee = $this->Employee->validate_employee();
+	  
+	  	$employee = $this->User->validate_employee();
 		if ($employee) {
-			$actor  = $this->params['form']['actor'];
+			$actor  = $this->params['form'];
 			$this->Actor->save($actor);
 			$this->result = $actor;
 		}
@@ -61,7 +81,7 @@ class ActorsController extends AppController {
 	}
 	
 	function delete_actor() {
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
 			$actor  = $this->params['form']['actor'];
 			$this->Actor->delete($actor['id']);
@@ -75,7 +95,7 @@ class ActorsController extends AppController {
 	function add_actor_movie() {
 		
 		//TODO: validate actor and movie existence
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
 			$actor  = $this->params['form']['actor'];
 			$video  = $this->params['form']['video'];
@@ -90,7 +110,7 @@ class ActorsController extends AppController {
 	}
 	
 	function remove_actor_movie() {
-	  	$employee = $this->Employee->validate_employee();
+	  	$employee = $this->User->validate_employee();
 		if ($employee) {
 			$actor  = $this->params['form']['actor'];
 			$video  = $this->params['form']['video'];

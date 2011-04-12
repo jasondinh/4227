@@ -8,17 +8,25 @@ class EmployeesController extends AppController {
 	function beforeRender() {
 	  if ($this->error) {
 	    $this->set('error', $this->error);
-	    debug($this->error);
 	  }
 	  
 	  if ($this->result) {
 	    $this->set('result', $this->result);
-	    debug($this->result);
 	  }
 	}
 	
+	function get_profile() {
+	  $tmp_employee = $this->User->validate_employee();
+	  if ($tmp_employee) {
+			$this->result = $tmp_employee;
+		}
+		else {
+			$this->error = generate_error('Permission error');
+		}
+	}
+	
 	function add_employee() {
-		$tmp_employee = $this->Employee->validate_employee();
+		$tmp_employee = $this->User->validate_employee();
 		
 		if ($tmp_employee) {
 			$employee = $this->params['form']['employee'];
@@ -41,7 +49,7 @@ class EmployeesController extends AppController {
 	
 	function get_employee_details() {
 	  	//TODO: validaion
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
 			$employee = $this->params['form']['employee'];
 
@@ -63,7 +71,7 @@ class EmployeesController extends AppController {
 	
 	function update_employee_details() {
 		//TODO: remove password field
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
 			$employee  = $this->params['form']['employee'];
 			$this->Employee->save($employee);
@@ -76,7 +84,7 @@ class EmployeesController extends AppController {
 	}
 	
 	function delete_employee() {
-	  	$employee = $this->Employee->validate_employee();
+	  	$employee = $this->User->validate_employee();
 		if ($employee) {
 			$employee  = $this->params['form']['employee'];
 			$this->Employee->delete($employee['id']);
@@ -96,7 +104,7 @@ class EmployeesController extends AppController {
 	}
 	
 	function change_password() {
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
 			//$employee  = $this->params['form']['employee'];
 			$employee['Employee']['password'] = $this->params['form']['employee']['new_password'];

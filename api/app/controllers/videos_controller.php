@@ -2,7 +2,7 @@
 class VideosController extends AppController {
 
 	var $name = 'Videos';
-	var $uses = array("Employee", "User", 'Video');
+	var $uses = array("Employee", "User", 'Video', 'Queue');
 	var $error;
 	var $result;	
 	
@@ -16,14 +16,55 @@ class VideosController extends AppController {
 	  }
 	}
 	
-	function add_video() {
+	function search_title() {
+	  $keyword = $this->params['form']['keyword'];
+	  $videos = $this->Video->find('all', array(
+	   'conditions' => array(
+	     'Video.name LIKE' => "%$keyword%"
+	   )
+	  ));
+	  $this->result = $videos;
+	}
+	
+	function top10() {
+	  $queues = $this->Queue->find('all');
+	  $tmp = array();
+	  foreach ($queues as $queue) {
+	    if (isset($tmp[$queue['Video']['id']])) {
+	      $tmp[$queue['Video']['id']]++;
+	    }
+	    else {
+	      $tmp[$queue['Video']['id']] = 1;
+	    }
+	  }
+	  
+	  arsort($tmp);
+	  $videos = array();
+	  $i = 0;
+	  foreach ($tmp as $key => $value) {
+	    $i++;
+	    $video = $this->Video->find('first', array(
+	     'conditions' => array(
+	       'Video.id' => $key
+	     ),
+	     'recursive' => -1
+	    ));
+	    $videos[] = $video;
+	    if ($i > 9) {
+	      break;
+	    }
+	  }
+	  $this->result = $videos;
+	}
+	
+	function add() {
 		
 		//TODO: check video duplication
 		
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		
 		if ($employee) {
-			$video  = $this->params['form']['video'];
+			$video  = $this->params['form'];
 			$this->Video->save($video);
 			$this->result = $video;
 		}
@@ -41,14 +82,28 @@ class VideosController extends AppController {
 		
 		//TODO: validaion
 		
-		$video = $this->Video->find('all', array(
+		$videos = $this->Video->find('all', array(
 		  'conditions' => array(
 		    'Video.id' => $id,
 		  )
 		));
+		//debug($videos);
 		
-		if ($video) {
-			$this->result = $video;
+		
+		
+		if ($videos) {
+		  foreach ($videos as &$video) {
+		    foreach ($video['Comment'] as &$comment) {
+		      $comment2 = $this->Video->Comment->find('first', array(
+		        'conditions' => array(
+		          'Comment.id' => $comment['id']
+		        )
+		      ));
+		      $comment = $comment2;
+		    }
+		  }
+		  //debug($videos);
+			$this->result = $videos;
 		}
 		
 		else {
@@ -58,9 +113,9 @@ class VideosController extends AppController {
 	}
 	
 	function update_video_details() {
-		$employee = $this->Employee->validate_employee();
+		$employee = $this->User->validate_employee();
 		if ($employee) {
-			$video  = $this->params['form']['video'];
+			$video  = $this->params['form'];
 			$this->Video->save($video);
 			$this->result = $video;
 		}
@@ -69,10 +124,10 @@ class VideosController extends AppController {
 		}
 	}
 	
-	function delete_video() {
-	 	$employee = $this->Employee->validate_employee();
+	function remove() {
+	 	$employee = $this->User->validate_employee();
 		if ($employee) {
-			$video  = $this->params['form']['video'];
+			$video  = $this->params['form']['Video'];
 			$this->Video->delete($video['id']);
 			$this->result = array('result' => TRUE);
 		}

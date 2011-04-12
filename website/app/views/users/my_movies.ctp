@@ -2,7 +2,7 @@
 $i = 0;
 
 if (sizeof($queues) == 0) {
-  echo 'You don\'t have any movie in your queue, how about <a href="genres/show">browsing</a> for one?';
+  echo 'You don\'t have any movie in your queue, how about '.$this->Html->link('browsing', array('controller' => 'genres', 'action' => 'show_all')).' for one?';
 }
 else {
   foreach ($queues as $queue) {

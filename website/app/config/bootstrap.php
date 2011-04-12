@@ -49,7 +49,28 @@
  * Inflector::rules('plural', array('rules' => array(), 'irregular' => array(), 'uninflected' => array()));
  *
  */
-
 function generate_error($error) {
   return array('error' => $error);
+}
+
+function isLoggedIn($view) {
+  return $view->Session->read('User.loggedin');
+}
+
+function getUser($view) {
+  $user = $view->Session->read('User.info');
+  return $user;
+}
+
+function isAdmin($view) {
+  $user = getUser($view);
+  if ($user['User']['roles'] == 1) {
+    return true;
+  }
+  return false;
+}
+
+function getEmployee($view) {
+  $employee = $view->Session->read('Employee.info');
+  return $employee;
 }

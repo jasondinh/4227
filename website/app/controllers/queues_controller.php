@@ -3,6 +3,11 @@ class QueuesController extends AppController {
 
 	var $name = 'Queues';
 	var $components = array('Api');
+	function beforeFilter() {
+    $top10 = $this->Api->get('videos/top10');
+    $this->set('top10', $top10);
+    $this->set('title', 'Queue');
+  }
 	function add_video_queue($video_id) {
 	  $user = $this->Session->read('User.info');
 	  
@@ -16,6 +21,8 @@ class QueuesController extends AppController {
     if (isset($result['error'])) {
       $this->set('error', $result['error']);
     }
+    
+    $this->redirect(array('controller' => 'users', 'action' => 'my_movies'));
 	}
 	
 	function remove_video_queue($video_id) {
@@ -31,7 +38,77 @@ class QueuesController extends AppController {
     if (isset($result['error'])) {
       $this->set('error', $result['error']);
     }
+    $this->redirect(array('controller' => 'users', 'action' => 'my_movies'));
 	}
+	
+	function admin_index() {
+    if (isAdmin($this)) {
+	    $result = $this->Api->get('queues/show_all'); 
+	    $processing = array();
+	    $sent = array();
+	    $returned = array();
+	    $pending = array();
+	    
+	    foreach ($result as $queue) {
+	      if ($queue['Queue']['status'] == 0) {
+	        $pending[] = $queue;
+	      }
+	      else if ($queue['Queue']['status'] == 1) {
+	        $processing[] = $queue;
+	      }
+	      else if ($queue['Queue']['status'] == 2) {
+	        $sent[] = $queue;
+	      }
+	      else if ($queue['Queue']['status'] == 3) {
+	        $returned[] = $queue;
+	      }
+	    }
+	    $this->set('processing', $processing);
+	    $this->set('sent', $sent);
+	    $this->set('pending', $pending);
+	    $this->set('returned', $returned);
+	  }
+  }
+  
+  function admin_edit($id = null) {
+    if (isAdmin($this)) {
+      if (!$this->data) {
+	      $user = $this->Session->read('User.info');
+	      $data = array();
+        $data['username'] = $user['User']['username'];
+        $data['password'] = $user['User']['password'];
+        $result = $this->Api->post('queues/show/'.$id, $data); 
+        //debug($result);
+  	    $this->set('queue', $result);
+  	    $result = $this->Api->get('videos/get_all');
+  	    $videos = array();
+  	    foreach ($result as $video) {
+  	      $videos[$video['Video']['id']] = $video['Video']['name'];
+  	    }
+  	    $this->set('videos', $videos);
+      }
+      else {
+        $data = $this->data;
+	      $user = $this->Session->read('User.info');
+        $data['username'] = $user['User']['username'];
+        $data['password'] = $user['User']['password'];
+        $this->Api->post('queues/edit', $data);
+        $this->redirect(array('action'=>'index'));
+      }
+	  }
+  }
+  
+  function admin_delete($id) {
+    if (isAdmin($this)) {
+	    $user = $this->Session->read('User.info');
+	    $data['username'] = $user['User']['username'];
+      $data['password'] = $user['User']['password'];
+      $data['Queue']['id'] = $id;
+      $this->Api->post('queues/remove', $data);
+      $this->redirect(array('action' => 'index'));
+	  }
+  }
+  
 
 	// function index() {
 	//     $this->Queue->recursive = 0;

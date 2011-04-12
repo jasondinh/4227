@@ -2,107 +2,86 @@
 class ActorsController extends AppController {
 
 	var $name = 'Actors';
-	var $uses = array("Employee", "User", 'Actor', 'Video');
-	var $error;
-	var $result;	
+	var $components = array('Api');
+	function beforeFilter() {
+    $top10 = $this->Api->get('videos/top10');
+    $this->set('top10', $top10);
+    $this->set('title', 'Actor');
+  }
 	
-	function beforeRender() {
-	  if ($this->error) {
-	    $this->set('error', $this->error);
-	    debug($this->error);
-	  }
+	function show($id) {
 	  
-	  if ($this->result) {
-	    $this->set('result', $this->result);
-	    debug($this->result);
+	  $result =  $this->Api->get('actors/show/'.$id);
+	  $this->set('actor', $result);
+	}
+	
+	function show_all() {
+	  $result = $this->Api->get('actors/show_all');
+	  $this->set('actors', $result);
+	}
+	
+	function admin_index() {
+    if (isAdmin($this)) {
+	    $result = $this->Api->get('actors/show_all'); 
+	    $this->set('actors', $result);
 	  }
-	}
-	function add_actor() {
-		
-		$employee = $this->Employee->validate_employee();
-		
-		if ($employee) {
-			$actor  = $this->params['form']['actor'];
-			$this->Actor->save($actor);
-			$this->result = $actor;
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	  
-	}
-	
-	function get_actor_details() {
-		
-	  	//TODO: validaion
-		$actor = $this->params['form']['actor'];
-		
-		$actor = $this->Actor->find_actor_by_id($actor['id']);
-		
-		if ($actor) {
-			$this->result = $actor;
-		}
-		
-		else {
-			$this->error = generate_error('No such actor');
-		}
-	}
-	
-	function update_actor_details() {
-	  	$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$actor  = $this->params['form']['actor'];
-			$this->Actor->save($actor);
-			$this->result = $actor;
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	function delete_actor() {
-		$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$actor  = $this->params['form']['actor'];
-			$this->Actor->delete($actor['id']);
-			$this->result = array('result' => TRUE);
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	function add_actor_movie() {
-		
-		//TODO: validate actor and movie existence
-		$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$actor  = $this->params['form']['actor'];
-			$video  = $this->params['form']['video'];
-			
-			$this->Actor->habtmAdd('Video', $actor['id'], $video['id']);
-			
-			$this->result = array('result' => TRUE);
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
-	
-	function remove_actor_movie() {
-	  	$employee = $this->Employee->validate_employee();
-		if ($employee) {
-			$actor  = $this->params['form']['actor'];
-			$video  = $this->params['form']['video'];
-			
-			$this->Actor->habtmDelete('Video', $actor['id'], $video['id']);
-			
-			$this->result = array('result' => TRUE);
-		}
-		else {
-			$this->error = generate_error("Permission error");
-		}
-	}
+  }
+  
+  function admin_edit($id = null) {
+    if (isAdmin($this)) {
+      if (!$this->data) {
+        $result = $this->Api->get('actors/get_actor_details/'.$id); 
+
+  	    $this->set('actor', $result);
+  	    $result = $this->Api->get('videos/get_all');
+  	    $videos = array();
+  	    foreach ($result as $video) {
+  	      $videos[$video['Video']['id']] = $video['Video']['name'];
+  	    }
+  	    $this->set('videos', $videos);
+      }
+      else {
+        $data = $this->data;
+	      $user = $this->Session->read('User.info');
+        $data['username'] = $user['User']['username'];
+        $data['password'] = $user['User']['password'];
+        $this->Api->post('actors/update_actor_details', $data);
+        $this->redirect(array('action'=>'index'));
+      }
+	  }
+  }
+  
+  function admin_delete($id) {
+    if (isAdmin($this)) {
+	    $user = $this->Session->read('User.info');
+	    $data['username'] = $user['User']['username'];
+      $data['password'] = $user['User']['password'];
+      $data['Video']['id'] = $id;
+      $this->Api->post('videos/remove', $data);
+      $this->redirect(array('action' => 'index'));
+	  }
+  }
+  
+  function admin_add() {
+    if (isAdmin($this)) {
+	    if (!$this->data) {
+  	    $result = $this->Api->get('videos/get_all');
+  	    $videos = array();
+  	    foreach ($result as $video) {
+  	      $videos[$video['Video']['id']] = $video['Video']['name'];
+  	    }
+  	    $this->set('videos', $videos);
+      }
+      else {
+        $data = $this->data;
+	      $user = $this->Session->read('User.info');
+        $data['username'] = $user['User']['username'];
+        $data['password'] = $user['User']['password'];
+        $this->Api->post('actors/add', $data);
+        $this->redirect(array('action'=>'index'));
+      }
+	  }
+  }
 
 	// function index() {
 	//     $this->Actor->recursive = 0;

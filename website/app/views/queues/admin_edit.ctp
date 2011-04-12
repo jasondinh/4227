@@ -3,24 +3,26 @@
 	<fieldset>
  		<legend><?php __('Admin Edit Queue'); ?></legend>
 	<?php
-		echo $this->Form->input('id');
-		echo $this->Form->input('user_id');
-		echo $this->Form->input('video_id');
-		echo $this->Form->input('timeStamp');
-		echo $this->Form->input('status');
+		echo $this->Form->input('id', array(
+		  'type' => 'hidden',
+		  'value' => $queue['Queue']['id']
+		));
+		echo $this->Form->input('video_id', array(
+		  'type' => 'select',
+		  'options' => $videos,
+		  'value' => $queue['Queue']['video_id']
+		));
+		echo $this->Form->input('status', array(
+		  'type' => 'select',
+		  'options' => array(
+		    '0' => 'Pending',
+		    '1' => 'Processing',
+		    '2' => 'Sent',
+		    '3' => 'Returned'
+		  ),
+		  'value' => $queue['Queue']['status']
+		));
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit', true));?>
-</div>
-<div class="actions">
-	<h3><?php __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php echo $this->Html->link(__('Delete', true), array('action' => 'delete', $this->Form->value('Queue.id')), null, sprintf(__('Are you sure you want to delete # %s?', true), $this->Form->value('Queue.id'))); ?></li>
-		<li><?php echo $this->Html->link(__('List Queues', true), array('action' => 'index'));?></li>
-		<li><?php echo $this->Html->link(__('List Users', true), array('controller' => 'users', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New User', true), array('controller' => 'users', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Videos', true), array('controller' => 'videos', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Video', true), array('controller' => 'videos', 'action' => 'add')); ?> </li>
-	</ul>
 </div>

@@ -37,5 +37,5 @@ if (isset($error)) {
   ?>
 </fieldset>
 <?php echo $this->Form->end(__('Register', true));?>
-</div>
+
 </div>

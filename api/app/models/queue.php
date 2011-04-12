@@ -4,6 +4,16 @@ class Queue extends AppModel {
 	var $displayField = 'id';
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
+	var $hasOne = array(
+		'Payment' => array(
+			'className' => 'Payment',
+			'foreignKey' => 'queue_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		)
+	);
+
 	var $belongsTo = array(
 		'User' => array(
 			'className' => 'User',

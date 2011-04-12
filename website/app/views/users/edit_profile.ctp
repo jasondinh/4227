@@ -44,6 +44,11 @@ if ($this->Session->read('User.loggedin')) {
   		echo $this->Form->input('zip', array(
   		  'value' => $user['User']['zip']
   		));
+  		echo $this->Form->input('pointlala', array(
+  		  'value' => $user['User']['point'],
+  		  'disabled' => true,
+  		  'label' => 'Point'
+  		));
   	?>
   	</fieldset>
   <?php echo $this->Form->end('Submit');?>
